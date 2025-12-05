@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    image: pki-2fa:latest
+    container_name: pki-2fa
+    ports:
+      - "8080:8080"
+    volumes:
+      - pki_seed:/data
+      - pki_cron:/cron
+    restart: unless-stopped
+volumes:
+  pki_seed:
+  pki_cron:
