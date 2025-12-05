@@ -1,21 +1,17 @@
-# Use official Python image
-FROM python:3.12-slim
+FROM --platform=linux/amd64 python:3.11-slim
 
-# Set working directory inside container
 WORKDIR /app
 
-# Copy requirements file first
-COPY requirements.txt .
+RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY app ./app
-COPY seed.txt ./data/seed.txt
+COPY . .
 
-# Expose FastAPI port
-EXPOSE 8000
+RUN mkdir -p /data /cron
 
-# Run FastAPI with Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+COPY cron/crontab /etc/cron.d/pki-cron
+RUN chmod 0644 /etc/cron.d/pki-cron && crontab /etc/cron.d/pki-cron
+
+CMD service cron start && uvicorn main:app --host 0.0.0.0 --port 8080
