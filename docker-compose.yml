@@ -3,6 +3,7 @@ services:
     build: .
     image: pki-2fa:latest
     container_name: pki-2fa
+    platform: linux/amd64
     ports:
       - "8080:8080"
     volumes:
