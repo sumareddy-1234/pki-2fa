@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Install Python, pip, and cron
 RUN apt-get update --fix-missing && \
-    apt-get install -y python3 python3-pip cron && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-pip cron && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install dependencies
@@ -16,12 +16,12 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create data + cron folders
+# Create data and cron folders
 RUN mkdir -p /data /cron
 
 # Setup cron job
 COPY cron/crontab /etc/cron.d/pki-cron
 RUN chmod 0644 /etc/cron.d/pki-cron && crontab /etc/cron.d/pki-cron
 
-# Run cron + FastAPI app
-CMD service cron start && uvicorn main:app --host 0.0.0.0 --port 8080
+# Run cron in foreground and FastAPI app
+CMD cron -f & uvicorn main:app --host 0.0.0.0 --port 8080
